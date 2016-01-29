@@ -14,6 +14,6 @@ sub baz {
     return "baz";
 }
 sub call {
-    return caller();
+    return caller(1);
 }
 1;

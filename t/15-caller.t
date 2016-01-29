@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 
+use Data::Dumper;
 use Test::More;
 
 use lib 't/data';
@@ -19,6 +20,10 @@ BEGIN {
 
     is ($caller, 'main', "caller() in a wrapped sub works");
     ok ($caller ne 'Wrap::Sub::Child', "caller() in a wrapped sub works");
+
+    my @call_data = One::call();
+
+    print Dumper \@call_data;
 
 };
 
