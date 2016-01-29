@@ -13,4 +13,7 @@ sub bar {
 sub baz {
     return "baz";
 }
+sub call {
+    return caller();
+}
 1;
