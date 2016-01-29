@@ -24,6 +24,13 @@ BEGIN {
     is (ref $w, 'Wrap::Sub::Child', "wrap()'s pre param works with a cref" );
 }
 {
+    my $wrap = Wrap::Sub->new;
+    my $w = $wrap->wrap('wrap_1');
+
+    eval { $w->post('asdf'); };
+    like ($@, qr/invalid parameters to post/, "post() breaks with invalid params" );
+}
+{
     my $w;
     my $wrap = Wrap::Sub->new;
 
