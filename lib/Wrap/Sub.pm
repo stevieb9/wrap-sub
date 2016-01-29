@@ -103,137 +103,9 @@ Wrap::Sub - Wrap subroutines with pre and post hooks, and more.
 
 =head1 SYNOPSIS
 
-    # see EXAMPLES for a full use case and caveats
-
-    use Wrap::Sub;
-
-    # create the parent wrap object
-
-    my $wrap = Wrap::Sub->new;
-
-    # wrap some subs...
-
-    my $foo = $wrap->wrap('Package::foo');
-    my $bar = $wrap->wrap('Package::bar');
-
-    # wait until a wrapped sub is called
-
-    Package::foo();
-
-    # then...
-
-    $foo->name;         # name of sub that's wrapped
-    $foo->called;       # was the sub called?
-    $foo->called_count; # how many times was it called?
-    $foo->called_with;  # array of params sent to sub
-
-    # have the wrapped sub return something when it's called (list or scalar).
-
-    $foo->return_value(1, 2, {a => 1});
-    my @return = Package::foo;
-
-    # have the wrapped sub perform an action
-
-    $foo->side_effect( sub { die "eval catch" if @_; } );
-
-    eval { Package::foo(1); };
-    like ($@, qr/eval catch/, "side_effect worked with params");
-
-    # extract the parameters the sub was called with
-
-    my @args = $foo->called_with;
-
-    # reset the wrap object for re-use within the same scope
-
-    $foo->reset;
-
-    # restore original functionality to the sub
-
-    $foo->unwrap;
-
-    # re-wrap a previously unwrap()ed sub
-
-    $foo->rewrap;
-
-    # check if a sub is wrapped
-
-    my $state = $foo->wrapped_state;
-
-    # wrap out a CORE:: function. Be warned that this *must* be done within
-    # compile stage (BEGIN), and the function can NOT be unwrapped prior
-    # to the completion of program execution
-
-    my ($wrap, $caller);
-
-    BEGIN {
-        $wrap = Wrap::Sub->new;
-        $caller = $wrap->wrap('caller');
-    };
-
-    $caller->return_value(55);
-    caller(); # wrapped caller() called
-
 =head1 DESCRIPTION
 
-Easy to use and very lightweight module for wraping out sub calls.
-Very useful for testing areas of your own modules where getting coverage may
-be difficult due to nothing to test against, and/or to reduce test run time by
-eliminating the need to call subs that you really don't want or need to test.
-
-=head1 EXAMPLE
-
-Here's a full example to get further coverage where it's difficult if not
-impossible to test certain areas of your code (eg: you have if/else statements,
-but they don't do anything but call other subs. You don't want to test the
-subs that are called, nor do you want to add statements to your code).
-
-Note that if the end subroutine you're testing is NOT Object Oriented (and
-you're importing them into your module that you're testing), you have to wrap
-them as part of your own namespace (ie. instead of Other::first, you'd wrap
-MyModule::first).
-
-   # module you're testing:
-
-    package MyPackage;
-    
-    use Other;
-    use Exporter qw(import);
-    @EXPORT_OK = qw(test);
-   
-    my $other = Other->new;
-
-    sub test {
-        my $arg = shift;
-        
-        if ($arg == 1){
-            # how do you test this?... there's no return etc.
-            $other->first();        
-        }
-        if ($arg == 2){
-            $other->second();
-        }
-    }
-
-    # your test file
-
-    use MyPackage qw(test);
-    use Wrap::Sub;
-    use Test::More tests => 2;
-
-    my $wrap = Wrap::Sub->new;
-
-    my $first = $wrap->wrap('Other::first');
-    my $second = $wrap->wrap('Other::second');
-
-    # coverage for first if() in MyPackage::test
-    test(1);
-    is ($first->called, 1, "1st if() statement covered");
-
-    # coverage for second if()
-    test(2);
-    is ($second->called, 1, "2nd if() statement covered");
-
-=head1 MOCK OBJECT METHODS
+=head1 WRAP OBJECT METHODS
 
 =head2 C<new(%opts)>
 
@@ -244,17 +116,11 @@ Optional options:
 
 =over 4
 
-=item C<return_value =E<gt> $scalar>
+=item C<pre =E<gt> $cref>
 
-Set this to have all wrapped subs created with this wrap object return anything
-you wish (accepts a single scalar only. See C<return_value()> method to return
-a list and for further information). You can also set it in individual wraps
-only (see C<return_value()> method).
+=item C<post =E<gt> $cref>
 
-=item C<side_effect =E<gt> $cref>
-
-Set this in C<new()> to have the side effect passed into all child wraps
-created with this object. See C<side_effect()> method.
+=item C<post_return =E<gt> Bool>
 
 =back
 
