@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
-use Devel::Examine::Subs;
 use Scalar::Util qw(weaken);
 use Wrap::Sub::Child;
 
@@ -32,24 +31,67 @@ sub wrap {
         $self->{$_} = $p{$_};
     }
 
-    my $child = Wrap::Sub::Child->new;
+    my ($symtab, $module, $is_module);
 
-    $child->pre($self->{pre}) if $self->{pre};
+    if (! defined &$sub){
+        no strict 'refs';
 
-    if (defined $self->{post_return} && $self->{post}){
-        $child->post($self->{post}, post_return => $self->{post_return});
+        $module = $sub;
+        $symtab = $module;
+        $symtab .= "::";
+        $is_module = 1 if keys %$symtab;
     }
-    elsif ($self->{post}){
-        $child->post($self->{post});
+
+    my @subs;
+
+    if ($is_module){
+
+        no strict 'refs';
+
+        my @symbols = keys %$symtab;
+
+        for (@symbols){
+            my $full_sub = "$module::$_";
+
+            if (defined &$full_sub){
+                push @subs, $full_sub;
+            }
+        }
+    }
+    else {
+        push @subs, $sub;
     }
 
-    $self->{objects}{$sub}{obj} = $child;
-    $child->_wrap($sub);
+    my @children;
 
-    # remove the REFCNT to the child, or else DESTROY won't be called
-    weaken $self->{objects}{$sub}{obj};
+    for my $sub (@subs) {
+        my $child = Wrap::Sub::Child->new;
 
-    return $child;
+        $child->pre($self->{pre}) if $self->{pre};
+
+        if (defined $self->{post_return} && $self->{post}) {
+            $child->post($self->{post}, post_return => $self->{post_return});
+        }
+        elsif ($self->{post}) {
+            $child->post($self->{post});
+        }
+
+        $self->{objects}{$sub}{obj} = $child;
+        $child->_wrap($sub);
+
+        # remove the REFCNT to the child, or else DESTROY won't be called
+        weaken $self->{objects}{$sub}{obj};
+
+        push @children, $child;
+    }
+
+    if (! $is_module) {
+        return $children[0];
+    }
+    else {
+        my %child_hash = map { $_->name => $_ } @children;
+        return \%child_hash;
+    }
 }
 sub wrapped_subs {
     my $self = shift;

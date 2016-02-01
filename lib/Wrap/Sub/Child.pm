@@ -47,7 +47,8 @@ sub _wrap {
     }
 
     if (! exists &$sub){
-        croak "can't wrap() a non-existent sub. The sub specified does not exist";
+        croak "can't wrap() a non-existent sub ($sub). The sub specified " .
+              "does not exist";
     }
 
     $self->{name} = $sub;
