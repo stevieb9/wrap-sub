@@ -62,8 +62,6 @@ sub _wrap {
         my $wrap = $self;
         weaken $wrap;
 
-
-
         *$sub = sub {
 
             @{ $wrap->{called_with} } = @_;
@@ -72,13 +70,13 @@ sub _wrap {
             my ($pre_return, $post_return) = ([], []);
 
             if ($wrap->{pre}){
-                $pre_return = [ $wrap->{pre}->(@_) ];
+                $pre_return = [ $wrap->{pre}->($wrap->name, @_) ];
             }
 
             my $sub_return = [ $wrap->{orig}->(@_) ] || [];
 
             if (defined $wrap->{post}){
-                $post_return = [ $wrap->{post}->($pre_return, $sub_return) ];
+                $post_return = [ $wrap->{post}->($wrap->name, $pre_return, $sub_return) ];
             }
 
             $post_return = undef if ! $wrap->{post_return};

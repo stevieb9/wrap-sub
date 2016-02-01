@@ -39,11 +39,14 @@ BEGIN {
     my @known = subs();
 
     for my $key (keys %$subs){
-        is (grep(/$key/, @known), 1, "$key is known");
+        is (grep(/^$key$/, @known), 1, "$key is known");
         is ($subs->{$key}->wrapped_state, 1, "$key is wrapped");
     }
 };
-
+{
+    eval { unlink 'Dump.pm.bak' or die "can't remove Dump backup"; };
+    is ($@, '', "bak file unlinked ok");
+}
 done_testing();
 
 sub subs {
