@@ -7,7 +7,7 @@ use Carp qw(croak);
 use Wrap::Sub::Child;
 use Scalar::Util qw(weaken);
 
-our $VERSION = '0.01';
+our $VERSION = '0.04';
 
 sub new {
     my $self = bless {}, shift;
