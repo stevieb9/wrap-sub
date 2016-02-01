@@ -9,7 +9,7 @@ use lib 't/data';
 
 BEGIN {
     use_ok('Wrap::Sub');
-    use_ok('Test::Three');
+    use_ok('Three');
 };
 {
     my $wrap = Wrap::Sub->new;
