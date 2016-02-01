@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
-use Wrap::Sub::Child;
+use Devel::Examine::Subs;
 use Scalar::Util qw(weaken);
+use Wrap::Sub::Child;
 
 our $VERSION = '0.04';
 

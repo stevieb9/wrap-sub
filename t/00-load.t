@@ -17,8 +17,6 @@ can_ok('Wrap::Sub', 'wrap');
 can_ok('Wrap::Sub', 'wrapped_subs');
 can_ok('Wrap::Sub', 'wrapped_objects');
 can_ok('Wrap::Sub', 'wrapped_state');
-can_ok('Wrap::Sub', 'DESTROY');
-
 
 can_ok('Wrap::Sub::Child', 'new');
 can_ok('Wrap::Sub::Child', '_wrap');
