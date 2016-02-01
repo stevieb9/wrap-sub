@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Data::Dumper;
+use Data::Dump;
 use Test::More;
 
 use lib 't/data';
@@ -11,6 +11,7 @@ BEGIN {
     use_ok('Wrap::Sub');
     use_ok('Three');
 };
+
 {
     my $wrap = Wrap::Sub->new;
     my $subs = $wrap->wrap('Three');
@@ -26,5 +27,36 @@ BEGIN {
         is (ref $subs->{$key}, 'Wrap::Sub::Child', "$key sub has a name and is an obj") ;
     }
 };
+{
+    my $wrap = Wrap::Sub->new;
+    eval { my $subs = $wrap->wrap('Storable'); };
+    like ($@, qr/\Qcan't wrap() a non-exist\E/, "a module has to be loaded before use");
+};
+{
+    my $wrap = Wrap::Sub->new;
+    my $subs = $wrap->wrap('Data::Dump');
+
+    my @known = subs();
+
+    for my $key (keys %$subs){
+        is (grep(/$key/, @known), 1, "$key is known");
+        is ($subs->{$key}->wrapped_state, 1, "$key is wrapped");
+    }
+};
 
 done_testing();
+
+sub subs {
+    return qw(
+        Data::Dump::ddx
+        Data::Dump::dumpf
+        Data::Dump::dump
+        Data::Dump::str
+        Data::Dump::tied_str
+        Data::Dump::fullname
+        Data::Dump::dd
+        Data::Dump::_dump
+        Data::Dump::format_list
+        Data::Dump::quote
+        );
+}

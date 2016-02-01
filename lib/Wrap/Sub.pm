@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
+use Devel::Examine::Subs;
 use Scalar::Util qw(weaken);
 use Wrap::Sub::Child;
 
@@ -46,17 +47,12 @@ sub wrap {
 
     if ($is_module){
 
-        no strict 'refs';
+        ( my $module_file = $module ) =~ s|::|/|g;
+        $module_file .= '.pm';
 
-        my @symbols = keys %$symtab;
-
-        for (@symbols){
-            my $full_sub = "$module::$_";
-
-            if (defined &$full_sub){
-                push @subs, $full_sub;
-            }
-        }
+        my $des = Devel::Examine::Subs->new(file => $INC{$module_file});
+        my $all = $des->all;
+        @subs = map { "$module::$_" } @$all;
     }
     else {
         push @subs, $sub;

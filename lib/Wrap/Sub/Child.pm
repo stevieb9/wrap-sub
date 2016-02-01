@@ -48,7 +48,8 @@ sub _wrap {
 
     if (! exists &$sub){
         croak "can't wrap() a non-existent sub ($sub). The sub specified " .
-              "does not exist";
+              "does not exist. If you're trying to wrap all subs in a " .
+              "module, you have to load it with 'use' or 'require' first\n";
     }
 
     $self->{name} = $sub;
