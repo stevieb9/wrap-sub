@@ -10,6 +10,21 @@ use Data::Dumper;
 
 our $VERSION = '0.01';
 
+BEGIN {
+    *CORE::GLOBAL::caller = sub (;$) {
+        my ($height) = ($_[0] || 0);
+        my $i = 1;
+        my $name_cache;
+        while (1) {
+            my @caller = CORE::caller($i++) or return;
+            $caller[3] = $name_cache if $name_cache;
+            $name_cache = $caller[0] eq 'Wrap::Sub::Child' ? $caller[3] : '';
+            next if $name_cache || $height-- != 0;
+            return wantarray ? @_ ? @caller : @caller[0..2] : $caller[0];
+        }
+    };
+}
+
 sub new {
     return bless {}, shift;
 }
@@ -44,6 +59,8 @@ sub _wrap {
 
         my $wrap = $self;
         weaken $wrap;
+
+
 
         *$sub = sub {
 
