@@ -1,286 +1,187 @@
 NAME
 
-    Mock::Sub - Mock package, object and standard subroutines, with unit
-    testing in mind.
+    Wrap::Sub - Wrap subroutines with pre and post hooks, and more.
 
 SYNOPSIS
 
-        # see EXAMPLES for a full use case and caveats
-    
-        use Mock::Sub;
-    
-        # create the parent mock object
-    
-        my $mock = Mock::Sub->new;
-    
-        # mock some subs...
-    
-        my $foo = $mock->mock('Package::foo');
-        my $bar = $mock->mock('Package::bar');
-    
-        # wait until a mocked sub is called
-    
-        Package::foo();
-    
-        # then...
-    
-        $foo->name;         # name of sub that's mocked
-        $foo->called;       # was the sub called?
-        $foo->called_count; # how many times was it called?
-        $foo->called_with;  # array of params sent to sub
-    
-        # have the mocked sub return something when it's called (list or scalar).
-    
-        $foo->return_value(1, 2, {a => 1});
-        my @return = Package::foo;
-    
-        # have the mocked sub perform an action
-    
-        $foo->side_effect( sub { die "eval catch" if @_; } );
-    
-        eval { Package::foo(1); };
-        like ($@, qr/eval catch/, "side_effect worked with params");
-    
-        # extract the parameters the sub was called with
-    
-        my @args = $foo->called_with;
-    
-        # reset the mock object for re-use within the same scope
-    
-        $foo->reset;
-    
-        # restore original functionality to the sub
-    
-        $foo->unmock;
-    
-        # re-mock a previously unmock()ed sub
-    
-        $foo->remock;
-    
-        # check if a sub is mocked
-    
-        my $state = $foo->mocked_state;
-    
-        # mock out a CORE:: function. Be warned that this *must* be done within
-        # compile stage (BEGIN), and the function can NOT be unmocked prior
-        # to the completion of program execution
-    
-        my ($mock, $caller);
-    
-        BEGIN {
-            $mock = Mock::Sub->new;
-            $caller = $mock->mock('caller');
-        };
-    
-        $caller->return_value(55);
-        caller(); # mocked caller() called
-
 DESCRIPTION
 
-    Easy to use and very lightweight module for mocking out sub calls. Very
-    useful for testing areas of your own modules where getting coverage may
-    be difficult due to nothing to test against, and/or to reduce test run
-    time by eliminating the need to call subs that you really don't want or
-    need to test.
+    This module allows you to wrap subroutines with pre and post hooks,
+    with the ability to change the parameters sent to the sub, and/or the
+    return from the sub. Thanks to code taken out of Hook::LexWrap.
 
-EXAMPLE
+    There are other modules that do this, see "SEE ALSO". I wrote it out of
+    sheer curiosity and experience.
 
-    Here's a full example to get further coverage where it's difficult if
-    not impossible to test certain areas of your code (eg: you have if/else
-    statements, but they don't do anything but call other subs. You don't
-    want to test the subs that are called, nor do you want to add
-    statements to your code).
-
-    Note that if the end subroutine you're testing is NOT Object Oriented
-    (and you're importing them into your module that you're testing), you
-    have to mock them as part of your own namespace (ie. instead of
-    Other::first, you'd mock MyModule::first).
-
-       # module you're testing:
-    
-        package MyPackage;
-        
-        use Other;
-        use Exporter qw(import);
-        @EXPORT_OK = qw(test);
-       
-        my $other = Other->new;
-    
-        sub test {
-            my $arg = shift;
-            
-            if ($arg == 1){
-                # how do you test this?... there's no return etc.
-                $other->first();        
-            }
-            if ($arg == 2){
-                $other->second();
-            }
-        }
-    
-        # your test file
-    
-        use MyPackage qw(test);
-        use Mock::Sub;
-        use Test::More tests => 2;
-    
-        my $mock = Mock::Sub->new;
-    
-        my $first = $mock->mock('Other::first');
-        my $second = $mock->mock('Other::second');
-    
-        # coverage for first if() in MyPackage::test
-        test(1);
-        is ($first->called, 1, "1st if() statement covered");
-    
-        # coverage for second if()
-        test(2);
-        is ($second->called, 1, "2nd if() statement covered");
-
-MOCK OBJECT METHODS
+WRAP OBJECT METHODS
 
  new(%opts)
 
-    Instantiates and returns a new Mock::Sub object, ready to be used to
-    start cteating mocked sub objects.
+    Instantiates and returns a new Wrap::Sub object, ready to be used to
+    start cteating wrapped sub objects.
 
-    Optional options:
+    Options (note that if these are set in new(), all subs wrapped with
+    this object will exhibit the same behaviour. Set in mock() or use pre()
+    and post() methods to individualize wrapped subroutine behaviour.
 
-    return_value => $scalar
+    pre => $cref
 
-      Set this to have all mocked subs created with this mock object return
-      anything you wish (accepts a single scalar only. See return_value()
-      method to return a list and for further information). You can also
-      set it in individual mocks only (see return_value() method).
+      A code reference containing actions that will be executed prior to
+      executing the sub that's wrapped. Receives the parameters that are
+      sent into the wrapped sub (@_).
 
-    side_effect => $cref
+    post => $cref
 
-      Set this in new() to have the side effect passed into all child mocks
-      created with this object. See side_effect() method.
+      A code reference containing actions that will be executed after the
+      wrapped sub is executed.
 
- mock('sub', %opts)
+      Receives an array reference containing an array reference holding the
+      return values from pre() and a second array reference containing the
+      return values from the actual wrapped sub. If neither pre or the
+      actual sub have return values, the respective array reference will be
+      empty.
 
-    Instantiates and returns a new mock object on each call. 'sub' is the
-    name of the subroutine to mock (requires full package name if the sub
+      Returns an array reference containing any return values specified in
+      the passed in code reference.
+
+    post_return => Bool
+
+      Set this to true if you want your post() hook to return it's results,
+      and false if you want the return value(s) from the actual wrapped sub
+      instead.
+
+ wrap('sub', %opts)
+
+    Instantiates and returns a new wrap object on each call. 'sub' is the
+    name of the subroutine to wrap (requires full package name if the sub
     isn't in main::).
 
-    The mocked sub will return undef if a return value isn't set, or a side
-    effect doesn't return anything.
+    Options:
 
-    Optional parameters:
+    See new() for a description of the parameters. Setting them here allows
+    you to individualize behaviour of the hooks for each wrapped
+    subroutine.
 
-    See new() for a description of the parameters. Both the return_value
-    and side_effect parameters can be set in this method to individualize
-    each mock object, and will override the global configuration if set in
-    new().
+ wrapped_subs
 
-    There's also return_value() and side_effect() methods if you want to
-    set, change or remove these values after instantiation of a child sub
-    object.
+    Returns a list of all the names of the subs that are currently wrapped
+    under the parent wrap object.
 
- mocked_subs
+ wrapped_objects
 
-    Returns a list of all the names of the subs that are currently mocked
-    under the parent mock object.
+    Returns a list of all sub objects underneath the parent wrap object,
+    regardless if its sub is currently wrapped or not.
 
- mocked_objects
+ wrapped_state('Sub::Name')
 
-    Returns a list of all sub objects underneath the parent mock object,
-    regardless if its sub is currently mocked or not.
-
- mocked_state('Sub::Name')
-
-    Returns 1 if the sub currently under the parent mock object is mocked
+    Returns 1 if the sub currently under the parent wrap object is wrapped
     or not, and 0 if not. Croaks if there hasn't been a child sub object
     created with this sub name.
 
-SUB OBJECT METHODS
+WRAPPED SUB OBJECT METHODS
 
-    These methods are for the children mocked sub objects returned from the
-    parent mock object. See "MOCK OBJECT METHODS" for methods related to
-    the parent mock object.
+    These methods are for the children wrapped sub objects returned from
+    the parent wrap object. See "WRAP OBJECT METHODS" for methods related
+    to the parent wrap object.
 
- unmock
+ unwrap
 
     Restores the original functionality back to the sub, and runs reset()
     on the object.
 
- remock
+ rewrap
 
-    Re-mocks the sub within the object after calling unmock on it (accepts
-    the side_effect and return_value parameters).
+    Re-wraps the sub within the object after calling unwrap on it.
 
  called
 
-    Returns true (1) if the sub being mocked has been called, and false (0)
-    if not.
-
- called_count
-
-    Returns the number of times the mocked sub has been called.
+    Returns true (1) if the sub being wrapped has been called, and false
+    (0) if not.
 
  called_with
 
     Returns an array of the parameters sent to the subroutine. croak()s if
-    we're called before the mocked sub has been called.
+    we're called before the wrapped sub has been called.
 
- mocked_state
+ wrapped_state
 
-    Returns true (1) if the sub the object refers to is currently mocked,
+    Returns true (1) if the sub the object refers to is currently wrapped,
     and false (0) if not.
 
  name
 
-    Returns the name of the sub being mocked.
+    Returns the name of the sub being wrapped.
 
- side_effect($cref)
+ pre($cref)
 
-    Add (or change/delete) a side effect after instantiation.
+    Send in a code reference containing actions that you want to have
+    performed prior to the wrapped sub being executed.
 
-    Send in a code reference containing an action you'd like the mocked sub
-    to perform.
+ post($cref, post_return => Bool)
 
-    The side effect function will receive all parameters sent into the
-    mocked sub.
+    A code reference containing actions that will be executed after the
+    wrapped sub is executed.
 
-    You can use both side_effect() and return_value() params at the same
-    time. side_effect will be run first, and then return_value. Note that
-    if side_effect's last expression evaluates to any value whatsoever
-    (even false), it will return that and return_value will be skipped.
+    The code supplied receives an array reference containing an array
+    reference holding the return values from pre() and a second array
+    reference containing the return values from the actual wrapped sub. If
+    neither pre or the actual sub have return values, the respective array
+    reference will be empty.
 
-    To work around this and have the side_effect run but still get the
-    return_value thereafter, write your cref to evaluate undef as the last
-    thing it does: sub { ...; undef; }.
-
- return_value
-
-    Add (or change/delete) the mocked sub's return value after
-    instantiation. Can be a scalar or list. Send in undef to remove
-    previously set values.
+    The optional parameter post_return specifies that you want the return
+    value(s) from this function instead of the return value(s) generated by
+    the wrapped sub. Disabled by default.
 
  reset
 
-    Resets the functional parameters (return_value, side_effect), along
-    with called() and called_count() back to undef/false. Does not restore
-    the sub back to its original state.
+    Resets the functional parameters (pre, post and post_return), along
+    with called() and called_with back to undef/false. Does not restore the
+    sub back to its original state.
 
 NOTES
 
     This module has a backwards parent-child relationship. To use, you
-    create a mock object using "PARENT MOCK OBJECT METHODS" new and mock
-    methods, thereafter, you use the returned mocked sub object METHODS to
-    perform the work.
+    create a wrap object using "WRAP OBJECT METHODS" new and wrap methods,
+    thereafter, you use the returned wrapped sub object "WRAPPED SUB OBJECT
+    METHODS" to perform the work.
 
-    The parent mock object retains certain information and statistics of
-    the child mocked objects (and the subs themselves).
+SEE ALSO
 
-    To mock CORE::GLOBAL functions, you *must* initiate within a BEGIN
-    block (see SYNOPSIS for details). It is important that if you mock a
-    CORE sub, it can't and won't be returned to its original state until
-    after the entire program process tree exists. Period.
+    This module was created for my own sheer curiosity and experience.
+    There are quite a few like it. I've never used any of them (this list
+    was taken from Hook::WrapSub):
 
-    I didn't make this a Test:: module (although it started that way)
-    because I can see more uses than placing it into that category.
+    Hook::LexWrap provides a similar capability to Hook::WrapSub, but has
+    the benefit that the caller() function works correctly within the
+    wrapped subroutine.
+
+    Sub::Prepend lets you provide a sub that will be called before a named
+    sub. The caller() function works correctly in the wrapped sub.
+
+    Sub::Mage provides a number of related functions. You can provide pre-
+    and post-call hooks, you can temporarily override a function and then
+    restore it later, and more.
+
+    Class::Hook lets you add pre- and post-call hooks around any methods
+    called by your code. It doesn't support functions.
+
+    Hook::Scope lets you register callbacks that will be invoked when
+    execution leaves the scope they were registered in.
+
+    Hook::PrePostCall provides an OO interface for wrapping a function with
+    pre- and post-call hook functions. Last updated in 1997, and marked as
+    alpha.
+
+    Hook::Heckle provides an OO interface for wrapping pre- and post-call
+    hooks around functions or methods in a package. Not updated sinc 2003,
+    and has a 20% failed rate on CPAN Testers.
+
+    Class::Wrap provides the wrap() function, which takes a coderef and a
+    package name. The coderef is invoked every time a method in the package
+    is called.
+
+    Sub::Versive lets you stack pre- and post-call hooks. Last updated in
+    2001.
 
 AUTHOR
 
@@ -289,25 +190,21 @@ AUTHOR
 BUGS
 
     Please report any bugs or requests at
-    https://github.com/stevieb9/mock-sub/issues
+    https://github.com/stevieb9/wrap-sub/issues
 
 REPOSITORY
 
-    https://github.com/stevieb9/mock-sub
+    https://github.com/stevieb9/wrap-sub
 
 BUILD RESULTS
 
-    CPAN Testers: http://matrix.cpantesters.org/?dist=Mock-Sub
+    CPAN Testers: http://matrix.cpantesters.org/?dist=Wrap-Sub
 
 SUPPORT
 
     You can find documentation for this module with the perldoc command.
 
-        perldoc Mock::Sub
-
-ACKNOWLEDGEMENTS
-
-    Python's MagicMock module.
+        perldoc Wrap::Sub
 
 LICENSE AND COPYRIGHT
 

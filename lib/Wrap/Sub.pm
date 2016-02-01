@@ -88,8 +88,6 @@ sub wrapped_state {
     }
     return $self->{objects}{$sub}{obj}->wrapped_state;
 }
-sub DESTROY {
-}
 sub __end {}; # vim fold placeholder
 
 1;
@@ -105,6 +103,13 @@ Wrap::Sub - Wrap subroutines with pre and post hooks, and more.
 
 =head1 DESCRIPTION
 
+This module allows you to wrap subroutines with pre and post hooks, with the
+ability to change the parameters sent to the sub, and/or the return from the
+sub. Thanks to code taken out of L<Hook::LexWrap>.
+
+There are other modules that do this, see L<SEE ALSO>. I wrote it out of sheer
+curiosity and experience.
+
 =head1 WRAP OBJECT METHODS
 
 =head2 C<new(%opts)>
@@ -112,15 +117,35 @@ Wrap::Sub - Wrap subroutines with pre and post hooks, and more.
 Instantiates and returns a new C<Wrap::Sub> object, ready to be used to start
 cteating wrapped sub objects.
 
-Optional options:
+Options (note that if these are set in C<new()>, all subs wrapped with this
+object will exhibit the same behaviour. Set in C<mock()> or use C<pre()> and
+C<post()> methods to individualize wrapped subroutine behaviour.
 
 =over 4
 
 =item C<pre =E<gt> $cref>
 
+A code reference containing actions that will be executed prior to executing
+the sub that's wrapped. Receives the parameters that are sent into the wrapped
+sub (C<@_>).
+
 =item C<post =E<gt> $cref>
 
+A code reference containing actions that will be executed after the wrapped
+sub is executed.
+
+Receives an array reference containing an array reference holding the return
+values from C<pre()> and a second array reference containing the return values
+from the actual wrapped sub. If neither C<pre> or the actual sub have return
+values, the respective array reference will be empty.
+
+Returns an array reference containing any return values specified in the passed
+in code reference.
+
 =item C<post_return =E<gt> Bool>
+
+Set this to true if you want your C<post()> hook to return it's results, and
+false if you want the return value(s) from the actual wrapped sub instead.
 
 =back
 
@@ -130,17 +155,10 @@ Instantiates and returns a new wrap object on each call. 'sub' is the name of
 the subroutine to wrap (requires full package name if the sub isn't in
 C<main::>).
 
-The wrapped sub will return undef if a return value isn't set, or a side effect
-doesn't return anything.
+Options:
 
-Optional parameters:
-
-See C<new()> for a description of the parameters. Both the C<return_value> and
-C<side_effect> parameters can be set in this method to individualize each wrap
-object, and will override the global configuration if set in C<new()>.
-
-There's also C<return_value()> and C<side_effect()> methods if you want to
-set, change or remove these values after instantiation of a child sub object.
+See C<new()> for a description of the parameters. Setting them here allows you
+to individualize behaviour of the hooks for each wrapped subroutine.
 
 =head2 wrapped_subs
 
@@ -158,10 +176,10 @@ Returns 1 if the sub currently under the parent wrap object is wrapped or not,
 and 0 if not. Croaks if there hasn't been a child sub object created with this
 sub name.
 
-=head1 SUB OBJECT METHODS
+=head1 WRAPPED SUB OBJECT METHODS
 
 These methods are for the children wrapped sub objects returned from the
-parent wrap object. See L<MOCK OBJECT METHODS> for methods related
+parent wrap object. See L<WRAP OBJECT METHODS> for methods related
 to the parent wrap object.
 
 =head2 C<unwrap>
@@ -171,16 +189,11 @@ the object.
 
 =head2 C<rewrap>
 
-Re-wraps the sub within the object after calling C<unwrap> on it (accepts the
-side_effect and return_value parameters).
+Re-wraps the sub within the object after calling C<unwrap> on it.
 
 =head2 C<called>
 
 Returns true (1) if the sub being wrapped has been called, and false (0) if not.
-
-=head2 C<called_count>
-
-Returns the number of times the wrapped sub has been called.
 
 =head2 C<called_with>
 
@@ -196,52 +209,77 @@ false (0) if not.
 
 Returns the name of the sub being wrapped.
 
-=head2 C<side_effect($cref)>
+=head2 C<pre($cref)>
 
-Add (or change/delete) a side effect after instantiation.
+Send in a code reference containing actions that you want to have performed
+prior to the wrapped sub being executed.
 
-Send in a code reference containing an action you'd like the
-wrapped sub to perform.
+=head2 C<post($cref, post_return =E<gt> Bool)>
 
-The side effect function will receive all parameters sent into the wrapped sub.
+A code reference containing actions that will be executed after the wrapped
+sub is executed.
 
-You can use both C<side_effect()> and C<return_value()> params at the same
-time. C<side_effect> will be run first, and then C<return_value>. Note that if
-C<side_effect>'s last expression evaluates to any value whatsoever
-(even false), it will return that and C<return_value> will be skipped.
+The code supplied receives an array reference containing an array reference
+holding the return values from C<pre()> and a second array reference containing
+the return values from the actual wrapped sub. If neither C<pre> or the actual
+sub have return values, the respective array reference will be empty.
 
-To work around this and have the side_effect run but still get the
-return_value thereafter, write your cref to evaluate undef as the last thing
-it does: C<sub { ...; undef; }>.
-
-=head2 C<return_value>
-
-Add (or change/delete) the wrapped sub's return value after instantiation.
-Can be a scalar or list. Send in C<undef> to remove previously set values.
+The optional parameter C<post_return> specifies that you want the return
+value(s) from this function instead of the return value(s) generated by the
+wrapped sub. Disabled by default.
 
 =head2 C<reset>
 
-Resets the functional parameters (C<return_value>, C<side_effect>), along
-with C<called()> and C<called_count()> back to undef/false. Does not restore
+Resets the functional parameters (C<pre>, C<post> and C<post_return>), along
+with C<called()> and C<called_with> back to undef/false. Does not restore
 the sub back to its original state.
 
 =head1 NOTES
 
 This module has a backwards parent-child relationship. To use, you create a
-wrap object using L<PARENT MOCK OBJECT METHODS> C<new> and C<wrap> methods,
-thereafter, you use the returned wrapped sub object L<METHODS> to perform the
-work.
+wrap object using L<WRAP OBJECT METHODS> C<new> and C<wrap> methods,
+thereafter, you use the returned wrapped sub object L<WRAPPED SUB OBJECT METHODS>
+to perform the work.
 
-The parent wrap object retains certain information and statistics of the child
-wrapped objects (and the subs themselves).
+=head1 SEE ALSO
 
-To wrap CORE::GLOBAL functions, you *must* initiate within a C<BEGIN> block
-(see C<SYNOPSIS> for details). It is important that if you wrap a CORE sub,
-it can't and won't be returned to its original state until after the entire
-program process tree exists. Period.
+This module was created for my own sheer curiosity and experience. There are
+quite a few like it. I've never used any of them (this list was taken from
+L<Hook::WrapSub>):
 
-I didn't make this a C<Test::> module (although it started that way) because
-I can see more uses than placing it into that category.
+L<Hook::LexWrap> provides a similar capability to C<Hook::WrapSub>,
+but has the benefit that the C<caller()> function works correctly
+within the wrapped subroutine.
+
+L<Sub::Prepend> lets you provide a sub that will be called before
+a named sub. The C<caller()> function works correctly in the
+wrapped sub.
+
+L<Sub::Mage> provides a number of related functions.
+You can provide pre- and post-call hooks,
+you can temporarily override a function and then restore it later,
+and more.
+
+L<Class::Hook> lets you add pre- and post-call hooks around any
+methods called by your code. It doesn't support functions.
+
+L<Hook::Scope> lets you register callbacks that will be invoked
+when execution leaves the scope they were registered in.
+
+L<Hook::PrePostCall> provides an OO interface for wrapping
+a function with pre- and post-call hook functions.
+Last updated in 1997, and marked as alpha.
+
+L<Hook::Heckle> provides an OO interface for wrapping pre- and post-call
+hooks around functions or methods in a package. Not updated sinc 2003,
+and has a 20% failed rate on CPAN Testers.
+
+L<Class::Wrap> provides the C<wrap()> function, which takes a coderef
+and a package name. The coderef is invoked every time a method in
+the package is called.
+
+L<Sub::Versive> lets you stack pre- and post-call hooks.
+Last updated in 2001.
 
 =head1 AUTHOR
 
