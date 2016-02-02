@@ -196,6 +196,7 @@ the modified results
 
     my $post_cref = sub {
         my ($pre_return, $sub_return) = @_;
+
         if ($sub_return->[0] != 1){
             die "$Wrap::Sub::name returned an error\n";
         }

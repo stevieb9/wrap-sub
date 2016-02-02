@@ -42,9 +42,7 @@ sub _wrap {
         croak "\n_wrap() is not a public method\n";
     }
 
-    if ($sub !~ /::/) {
-        $sub = "main::$sub" if $sub !~ /::/;
-    }
+    $sub = "main::$sub" if $sub !~ /::/;
 
     if (! exists &$sub){
         croak "can't wrap() a non-existent sub ($sub). The sub specified " .
@@ -123,7 +121,7 @@ sub unwrap {
         no strict 'refs';
         no warnings 'redefine';
 
-        if (defined $self->{orig} && $sub !~ /CORE::GLOBAL/) {
+        if (defined $self->{orig}) {
             *$sub = \&{ $self->{orig} };
         }
         else {
