@@ -1,5 +1,11 @@
 Revision history for Wrap-Sub
 
+0.05    2016-02-02
+        - the parent wrap object now has a results() method, returns a list of
+          all post() call results (even if post_return is disabled) (fixes #3)
+        - more tests
+        - POD fixes
+
 0.04    2016-02-02
         - added ability to wrap all subs in a module (prereq Devel::Examine::Subs)
         - pre() and post() methods now have access to $Wrap::Sub::name, which

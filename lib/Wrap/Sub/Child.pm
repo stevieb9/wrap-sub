@@ -79,6 +79,8 @@ sub _wrap {
                 $post_return = [ $wrap->{post}->($pre_return, $sub_return) ];
             }
 
+            push @{ $wrap->{wrapper}{post_returns} }, $post_return;
+
             $post_return = undef if ! $wrap->{post_return};
 
             if (! $wrap->{pre} && ! $wrap->{post}) {
@@ -147,7 +149,7 @@ sub name {
     return shift->{name};  
 }
 sub reset {
-    for (qw(pre post post_return called called_with)){
+    for (qw(pre post post_return post_returns called called_with)){
         delete $_[0]->{$_};
     }
 }

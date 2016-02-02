@@ -61,6 +61,7 @@ SYNOPSIS
 
         my $post_cref = sub {
             my ($pre_return, $sub_return) = @_;
+    
             if ($sub_return->[0] != 1){
                 die "$Wrap::Sub::name returned an error\n";
             }
@@ -71,6 +72,15 @@ SYNOPSIS
         };
     
         $foo_obj->post($post_cref, post_return => 1);
+
+    Get an ordered list (array of array references) of the last expression
+    evaluated in all sub object post() calls, even if post_return is false
+
+        my @post_results = $wrapper->results;
+    
+        for my $sub_post_result (@post_results){
+            print "$sub_post_result->[0]\n";
+        }
 
     Wrap all subs in a module (does not include imported subs), and have
     them all perform the same actions

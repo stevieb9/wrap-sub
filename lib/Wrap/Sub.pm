@@ -63,6 +63,8 @@ sub wrap {
     for my $sub (@subs) {
         my $child = Wrap::Sub::Child->new;
 
+        $child->{wrapper} = $self; # allow parent capture of child sta
+
         $child->pre($self->{pre}) if $self->{pre};
 
         if (defined $self->{post_return} && $self->{post}) {
@@ -88,6 +90,9 @@ sub wrap {
         my %child_hash = map { $_->name => $_ } @children;
         return \%child_hash;
     }
+}
+sub results {
+    return @{ $_[0]->{post_returns} };
 }
 sub wrapped_subs {
     my $self = shift;
@@ -207,6 +212,15 @@ the modified results
     };
 
     $foo_obj->post($post_cref, post_return => 1);
+
+Get an ordered list (array of array references) of the last expression
+evaluated in all sub object C<post()> calls, even if C<post_return> is false
+
+    my @post_results = $wrapper->results;
+
+    for my $sub_post_result (@post_results){
+        print "$sub_post_result->[0]\n";
+    }
 
 Wrap all subs in a module (does not include imported subs), and have them all
 perform the same actions
