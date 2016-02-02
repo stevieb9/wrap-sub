@@ -240,13 +240,15 @@ Returns bool whether the sub the object represents is currently wrapped or not.
 
 Returns the name of the sub this object is wraping.
 
-=head2 return_value
+=head2 pre
 
-Send in any values (list or scalar) that you want the wrapped sub to return when called.
+Send in a code reference containing actions you want performed before the
+wrapped sub is called.
 
-=head2 side_effect
+=head2 post
 
-Send in a code reference with any actions you want the wrapped sub to perform after it's been called.
+Send in a code reference containing actions you want performed after the
+wrapped sub is called.
 
 =head2 reset
 
