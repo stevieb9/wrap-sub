@@ -191,6 +191,14 @@ WRAP OBJECT METHODS
     or not, and 0 if not. Croaks if there hasn't been a child sub object
     created with this sub name.
 
+ results
+
+    As each wrapped sub is called where a post() method is set, we'll stash
+    the last expression evaluated in it, and push the results to an array.
+    This method will fetch that array.
+
+    Each entry is an array reference per post() call.
+
 WRAPPED SUB OBJECT METHODS
 
     These methods are for the children wrapped sub objects returned from
