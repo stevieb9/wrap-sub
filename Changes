@@ -1,4 +1,11 @@
-Revision history for Mock-Sub
+Revision history for Wrap-Sub
+
+0.04    2016-02-02
+        - added ability to wrap all subs in a module (prereq Devel::Examine::Subs)
+        - pre() and post() methods now have access to $Wrap::Sub::name, which
+          contains the name of the wrapped sub
+        - completed POD
+        - added more tests
 
 0.03    2016-02-01
         - release candidate

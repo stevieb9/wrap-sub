@@ -142,10 +142,10 @@ WRAP OBJECT METHODS
 
     post_return => Bool
 
-      Set this to true if you want your post() hook to return it's results,
+      Set this to true if you want your post() hook to return its results,
       and false if you want the return value(s) from the actual wrapped sub
-      instead. Set to disabled by default (ie. you'll get the return from
-      the original sub).
+      instead. Disabled by default (ie. you'll get the return from the
+      original sub).
 
  wrap('sub', %opts)
 

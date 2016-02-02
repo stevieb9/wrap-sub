@@ -171,7 +171,7 @@ Basic functionality example
     my @wrapped_subs = $wrapper->wrapped_subs;
 
 Here's an example that shows how you can get elapsed time of a sub (this
-example requires Time::HiRes)
+example requires L<Time::HiRes>)
 
     my $pre_cref = sub {
         return gettimeofday();
@@ -278,9 +278,9 @@ further details on returning values.
 
 =item C<post_return =E<gt> Bool>
 
-Set this to true if you want your C<post()> hook to return it's results, and
-false if you want the return value(s) from the actual wrapped sub instead. Set
-to disabled by default (ie. you'll get the return from the original sub).
+Set this to true if you want your C<post()> hook to return its results, and
+false if you want the return value(s) from the actual wrapped sub instead.
+Disabled by default (ie. you'll get the return from the original sub).
 
 =back
 
