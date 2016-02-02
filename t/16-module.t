@@ -18,7 +18,7 @@ BEGIN {
 
     is (ref $subs, 'HASH', "when wrapping all subs, return is a hashref");
 
-    my @ok = qw(Three::one Three::two Three::three Three::four Three::five);
+    my @ok = qw(Three::one Three::two Three::three Three::four Three::five Three::foo);
 
     for my $key (keys %$subs){
         my @in = grep(/$key/, @ok);
