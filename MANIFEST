@@ -18,7 +18,6 @@ t/08-unwrap.t
 t/09-rewrap.t
 t/10-state.t
 t/11-wrapped_subs.t
-t/12-mocked_objects.t
 t/12-wrapped_objects.t
 t/14-core_subs.t
 t/15-caller.t
