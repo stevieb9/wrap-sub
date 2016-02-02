@@ -49,14 +49,24 @@ sub wrap {
 
         ( my $module_file = $module ) =~ s|::|/|g;
         $module_file .= '.pm';
+        my $backup_file = $module_file;
+        $backup_file =~ s|.*/||;
+        $backup_file .= '.bak';
 
         my $des = Devel::Examine::Subs->new(file => $INC{$module_file});
+
+        if (-e $backup_file) {
+            unlink $backup_file or croak "can't unlink $backup_file!\n";
+        }
+
         my $all = $des->all;
         @subs = map { "$module\::$_" } @$all;
     }
     else {
         push @subs, $sub;
     }
+
+
 
     my @children;
 

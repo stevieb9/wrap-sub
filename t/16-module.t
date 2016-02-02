@@ -43,10 +43,11 @@ BEGIN {
         is ($subs->{$key}->wrapped_state, 1, "$key is wrapped");
     }
 };
-{
-    eval { unlink 'Dump.pm.bak' or die "can't remove Dump backup"; };
-    is ($@, '', "bak file unlinked ok");
-}
+
+# we now do this in the module
+#    eval { unlink 'Dump.pm.bak' or die "can't remove Dump backup"; };
+#    is ($@, '', "bak file unlinked ok");
+
 done_testing();
 
 sub subs {
