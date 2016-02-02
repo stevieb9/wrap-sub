@@ -23,6 +23,7 @@ t/14-core_subs.t
 t/15-caller.t
 t/16-module.t
 t/17-local_vars.t
+t/18-post_results.t
 t/data/One.pm
 t/data/Three.pm
 t/data/Two.pm

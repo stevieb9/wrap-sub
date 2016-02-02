@@ -315,21 +315,29 @@ Options:
 See C<new()> for a description of the parameters. Setting them here allows you
 to individualize behaviour of the hooks for each wrapped subroutine.
 
-=head2 wrapped_subs
+=head2 C<wrapped_subs>
 
 Returns a list of all the names of the subs that are currently wrapped under
 the parent wrap object.
 
-=head2 wrapped_objects
+=head2 C<wrapped_objects>
 
 Returns a list of all sub objects underneath the parent wrap object, regardless
 if its sub is currently wrapped or not.
 
-=head2 wrapped_state('Sub::Name')
+=head2 C<wrapped_state('Sub::Name')>
 
 Returns 1 if the sub currently under the parent wrap object is wrapped or not,
 and 0 if not. Croaks if there hasn't been a child sub object created with this
 sub name.
+
+=head2 C<results>
+
+As each wrapped sub is called where a C<post()> method is set, we'll stash the last
+expression evaluated in it, and push the results to an array. This method will fetch that
+array.
+
+Each entry is an array reference per C<post()> call.
 
 =head1 WRAPPED SUB OBJECT METHODS
 
