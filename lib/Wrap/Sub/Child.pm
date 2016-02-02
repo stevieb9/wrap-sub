@@ -64,19 +64,21 @@ sub _wrap {
 
         *$sub = sub {
 
+            local $Wrap::Sub::name = $sub;
+
             @{ $wrap->{called_with} } = @_;
             $wrap->{called} = 1;
 
             my ($pre_return, $post_return) = ([], []);
 
             if ($wrap->{pre}){
-                $pre_return = [ $wrap->{pre}->($wrap->name, @_) ];
+                $pre_return = [ $wrap->{pre}->(@_) ];
             }
 
             my $sub_return = [ $wrap->{orig}->(@_) ] || [];
 
             if (defined $wrap->{post}){
-                $post_return = [ $wrap->{post}->($wrap->name, $pre_return, $sub_return) ];
+                $post_return = [ $wrap->{post}->($pre_return, $sub_return) ];
             }
 
             $post_return = undef if ! $wrap->{post_return};
