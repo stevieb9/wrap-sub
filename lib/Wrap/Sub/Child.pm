@@ -64,7 +64,7 @@ sub _wrap {
 
         *$sub = sub {
 
-            local $Wrap::Sub::name = $sub;
+            local $Wrap::Sub::name = $wrap->name;
 
             @{ $wrap->{called_with} } = @_;
             $wrap->{called} = 1;

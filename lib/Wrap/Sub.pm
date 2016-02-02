@@ -132,22 +132,115 @@ sub __end {}; # vim fold placeholder
 1;
 =head1 NAME
 
-Wrap::Sub - Wrap subroutines with pre and post hooks, and more.
+Wrap::Sub - Object Oriented subroutine wrapper with pre and post hooks, and more.
 
 =for html
 <a href="http://travis-ci.org/stevieb9/wrap-sub"><img src="https://secure.travis-ci.org/stevieb9/wrap-sub.png"/>
 <a href='https://coveralls.io/github/stevieb9/wrap-sub?branch=master'><img src='https://coveralls.io/repos/stevieb9/wrap-sub/badge.svg?branch=master&service=github' alt='Coverage Status' /></a>
 
 =head1 SYNOPSIS
+    use Wrap::Sub;
+
+Basic functionality example
+
+    my $wrapper = Wrap::Sub->new;
+
+    # create the wrapped sub object
+
+    my $foo_obj  = $wrapper->wrap(
+        'My::Module::foo',
+        pre  => sub { print "$Wrap::Sub::name in pre\n"; },
+        post => sub { print "$Wrap::Sub::name in post\n"; },
+    );
+
+    # add/change/remove a routine via a method call
+
+    $foo_obj->post(sub { print "changed post\n"; } );
+
+    # unwrap and rewrap
+
+    $foo_obj->unwrap;
+    $foo_obj->rewrap;
+
+    # wrapped or not?
+
+    my $is_wrapped = $foo_obj->wrapped_state;
+
+    # list all subs wrapped under the current wrap object
+
+    my @wrapped_subs = $wrapper->wrapped_subs;
+
+Here's an example that shows how you can get elapsed time of a sub (this
+example requires Time::HiRes)
+
+    my $pre_cref = sub {
+        return gettimeofday();
+    };
+
+    my $post_cref = sub {
+        my $pre_return = shift;
+        my $time = gettimeofday() - $pre_return->[0];
+        print "$Wrap::Sub::name finished in $time seconds\n";
+    };
+
+    $foo_obj->pre($pre_cref);
+    $foo_obj->post($post_cref);
+
+Manipulate the return from the original subroutine, take action, then return
+the modified results
+
+    my $post_cref = sub {
+        my ($pre_return, $sub_return) = @_;
+        if ($sub_return->[0] != 1){
+            die "$Wrap::Sub::name returned an error\n";
+        }
+        else {
+            $sub_return->[0] = 100;
+            return $sub_return->[0];
+        }
+    };
+
+    $foo_obj->post($post_cref, post_return => 1);
+
+Wrap all subs in a module (does not include imported subs), and have them all
+perform the same actions
+
+    my $wrapper = Wrap::Sub->new(
+        pre  => sub { print "start $Wrap::Sub::name\n"; },
+        post => sub { print "finish $Wrap::Sub::name\n"; },
+    );
+
+    # wrapping a module returns an href with the sub name as the key,
+    # and the value being the wrapped sub object
+
+    my $module_subs = $wrapper->wrap('My::Module');
+
+    # unwrap them all, and confirm
+
+    for my $sub_name (keys %$module_subs){
+        my $sub_obj = $module_subs->{$sub_name};
+
+        print "$sub_name is wrapped\n" if $sub_obj->wrapped_state;
+
+        $sub_obj->unwrap;
+
+        if ($sub_obj->wrapped_state) {
+            die "$sub_name not unwrapped!"
+        }
+    }
 
 =head1 DESCRIPTION
 
-This module allows you to wrap subroutines with pre and post hooks, with the
-ability to change the parameters sent to the sub, and/or the return from the
-sub. Thanks to code taken out of L<Hook::LexWrap>.
+This module allows you to wrap subroutines with pre and post hooks while
+keeping track of your wrapped subs. It also has the ability to wrap all subs
+within entire modules easily (while filtering out ones that are imported).
+
+Thanks to code taken out of L<Hook::LexWrap>, C<caller()> works properly within
+the wrapped sub.
 
 There are other modules that do this, see L<SEE ALSO>. I wrote it out of sheer
-curiosity and experience.
+curiosity and experience, not because I didn't check the CPAN for existing
+modules that do the same thing.
 
 =head1 WRAP OBJECT METHODS
 
@@ -158,7 +251,7 @@ cteating wrapped sub objects.
 
 Options (note that if these are set in C<new()>, all subs wrapped with this
 object will exhibit the same behaviour. Set in C<mock()> or use C<pre()> and
-C<post()> methods to individualize wrapped subroutine behaviour.
+C<post()> methods to individualize wrapped subroutine behaviour).
 
 =over 4
 
@@ -166,32 +259,35 @@ C<post()> methods to individualize wrapped subroutine behaviour.
 
 A code reference containing actions that will be executed prior to executing
 the sub that's wrapped. Receives the parameters that are sent into the wrapped
-sub (C<@_>).
+sub (C<@_>). Has access to C<$Wrap::Sub::name> parameter, which holds the name
+of the original wrapped sub.
 
 =item C<post =E<gt> $cref>
 
 A code reference containing actions that will be executed after the wrapped
-sub is executed.
+sub is executed. Has access to C<$Wrap::Sub::name> parameter, which holds the
+name of the original wrapped sub.
 
 Receives an array reference containing an array reference holding the return
 values from C<pre()> and a second array reference containing the return values
 from the actual wrapped sub. If neither C<pre> or the actual sub have return
 values, the respective array reference will be empty.
 
-Returns an array reference containing any return values specified in the passed
-in code reference.
+Returns whatever you decide you want it to. See C<post_return> parameter for
+further details on returning values.
 
 =item C<post_return =E<gt> Bool>
 
 Set this to true if you want your C<post()> hook to return it's results, and
-false if you want the return value(s) from the actual wrapped sub instead.
+false if you want the return value(s) from the actual wrapped sub instead. Set
+to disabled by default (ie. you'll get the return from the original sub).
 
 =back
 
 =head2 C<wrap('sub', %opts)>
 
-Instantiates and returns a new wrap object on each call. 'sub' is the name of
-the subroutine to wrap (requires full package name if the sub isn't in
+Instantiates and returns a new wrapped sub object on each call. C<sub> is the
+name of the subroutine to wrap (requires full package name if the sub isn't in
 C<main::>).
 
 Options:
@@ -232,7 +328,8 @@ Re-wraps the sub within the object after calling C<unwrap> on it.
 
 =head2 C<called>
 
-Returns true (1) if the sub being wrapped has been called, and false (0) if not.
+Returns true (1) if the sub being wrapped has been called, and false (0) if
+not.
 
 =head2 C<called_with>
 
@@ -251,12 +348,14 @@ Returns the name of the sub being wrapped.
 =head2 C<pre($cref)>
 
 Send in a code reference containing actions that you want to have performed
-prior to the wrapped sub being executed.
+prior to the wrapped sub being executed. Has access to C<$Wrap::Sub::name>
+parameter, which holds the name of the original wrapped sub.
 
 =head2 C<post($cref, post_return =E<gt> Bool)>
 
 A code reference containing actions that will be executed after the wrapped
-sub is executed.
+sub is executed. Has access to C<$Wrap::Sub::name> parameter, which holds the
+name of the original wrapped sub.
 
 The code supplied receives an array reference containing an array reference
 holding the return values from C<pre()> and a second array reference containing

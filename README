@@ -1,17 +1,111 @@
 NAME
 
-    Wrap::Sub - Wrap subroutines with pre and post hooks, and more.
+    Wrap::Sub - Object Oriented subroutine wrapper with pre and post hooks,
+    and more.
 
-SYNOPSIS
+SYNOPSIS use Wrap::Sub;
+
+    Basic functionality example
+
+        my $wrapper = Wrap::Sub->new;
+    
+        # create the wrapped sub object
+    
+        my $foo_obj  = $wrapper->wrap(
+            'My::Module::foo',
+            pre  => sub { print "$Wrap::Sub::name in pre\n"; },
+            post => sub { print "$Wrap::Sub::name in post\n"; },
+        );
+    
+        # add/change/remove a routine via a method call
+    
+        $foo_obj->post(sub { print "changed post\n"; } );
+    
+        # unwrap and rewrap
+    
+        $foo_obj->unwrap;
+        $foo_obj->rewrap;
+    
+        # wrapped or not?
+    
+        my $is_wrapped = $foo_obj->wrapped_state;
+    
+        # list all subs wrapped under the current wrap object
+    
+        my @wrapped_subs = $wrapper->wrapped_subs;
+
+    Here's an example that shows how you can get elapsed time of a sub
+    (this example requires Time::HiRes)
+
+        my $pre_cref = sub {
+            return gettimeofday();
+        };
+    
+        my $post_cref = sub {
+            my $pre_return = shift;
+            my $time = gettimeofday() - $pre_return->[0];
+            print "$Wrap::Sub::name finished in $time seconds\n";
+        };
+    
+        $foo_obj->pre($pre_cref);
+        $foo_obj->post($post_cref);
+
+    Manipulate the return from the original subroutine, take action, then
+    return the modified results
+
+        my $post_cref = sub {
+            my ($pre_return, $sub_return) = @_;
+            if ($sub_return->[0] != 1){
+                die "$Wrap::Sub::name returned an error\n";
+            }
+            else {
+                $sub_return->[0] = 100;
+                return $sub_return->[0];
+            }
+        };
+    
+        $foo_obj->post($post_cref, post_return => 1);
+
+    Wrap all subs in a module (does not include imported subs), and have
+    them all perform the same actions
+
+        my $wrapper = Wrap::Sub->new(
+            pre  => sub { print "start $Wrap::Sub::name\n"; },
+            post => sub { print "finish $Wrap::Sub::name\n"; },
+        );
+    
+        # wrapping a module returns an href with the sub name as the key,
+        # and the value being the wrapped sub object
+    
+        my $module_subs = $wrapper->wrap('My::Module');
+    
+        # unwrap them all, and confirm
+    
+        for my $sub_name (keys %$module_subs){
+            my $sub_obj = $module_subs->{$sub_name};
+    
+            print "$sub_name is wrapped\n" if $sub_obj->wrapped_state;
+    
+            $sub_obj->unwrap;
+    
+            if ($sub_obj->wrapped_state) {
+                die "$sub_name not unwrapped!"
+            }
+        }
 
 DESCRIPTION
 
-    This module allows you to wrap subroutines with pre and post hooks,
-    with the ability to change the parameters sent to the sub, and/or the
-    return from the sub. Thanks to code taken out of Hook::LexWrap.
+    This module allows you to wrap subroutines with pre and post hooks
+    while keeping track of your wrapped subs. It also has the ability to
+    wrap all subs within entire modules easily (while filtering out ones
+    that are imported).
+
+    Thanks to code taken out of Hook::LexWrap, caller() works properly
+    within the wrapped sub.
 
     There are other modules that do this, see "SEE ALSO". I wrote it out of
-    sheer curiosity and experience.
+    sheer curiosity and experience, not because I didn't check the CPAN for
+    existing modules that do the same thing.
 
 WRAP OBJECT METHODS
 
@@ -22,18 +116,20 @@ WRAP OBJECT METHODS
 
     Options (note that if these are set in new(), all subs wrapped with
     this object will exhibit the same behaviour. Set in mock() or use pre()
-    and post() methods to individualize wrapped subroutine behaviour.
+    and post() methods to individualize wrapped subroutine behaviour).
 
     pre => $cref
 
       A code reference containing actions that will be executed prior to
       executing the sub that's wrapped. Receives the parameters that are
-      sent into the wrapped sub (@_).
+      sent into the wrapped sub (@_). Has access to $Wrap::Sub::name
+      parameter, which holds the name of the original wrapped sub.
 
     post => $cref
 
       A code reference containing actions that will be executed after the
-      wrapped sub is executed.
+      wrapped sub is executed. Has access to $Wrap::Sub::name parameter,
+      which holds the name of the original wrapped sub.
 
       Receives an array reference containing an array reference holding the
       return values from pre() and a second array reference containing the
@@ -41,20 +137,21 @@ WRAP OBJECT METHODS
       actual sub have return values, the respective array reference will be
       empty.
 
-      Returns an array reference containing any return values specified in
-      the passed in code reference.
+      Returns whatever you decide you want it to. See post_return parameter
+      for further details on returning values.
 
     post_return => Bool
 
       Set this to true if you want your post() hook to return it's results,
       and false if you want the return value(s) from the actual wrapped sub
-      instead.
+      instead. Set to disabled by default (ie. you'll get the return from
+      the original sub).
 
  wrap('sub', %opts)
 
-    Instantiates and returns a new wrap object on each call. 'sub' is the
-    name of the subroutine to wrap (requires full package name if the sub
-    isn't in main::).
+    Instantiates and returns a new wrapped sub object on each call. sub is
+    the name of the subroutine to wrap (requires full package name if the
+    sub isn't in main::).
 
     Options:
 
@@ -115,12 +212,15 @@ WRAPPED SUB OBJECT METHODS
  pre($cref)
 
     Send in a code reference containing actions that you want to have
-    performed prior to the wrapped sub being executed.
+    performed prior to the wrapped sub being executed. Has access to
+    $Wrap::Sub::name parameter, which holds the name of the original
+    wrapped sub.
 
  post($cref, post_return => Bool)
 
     A code reference containing actions that will be executed after the
-    wrapped sub is executed.
+    wrapped sub is executed. Has access to $Wrap::Sub::name parameter,
+    which holds the name of the original wrapped sub.
 
     The code supplied receives an array reference containing an array
     reference holding the return values from pre() and a second array

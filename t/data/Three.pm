@@ -3,9 +3,7 @@ use strict;
 use warnings;
 
 sub one {
-    sleep 1;
     two();
-    sleep 1;
     return 1;
 }
 sub two {
@@ -17,7 +15,6 @@ sub three {
     return 1;
 }
 sub four {
-    sleep 1;
     five();
     five();
     five();
@@ -26,5 +23,8 @@ sub four {
 }
 sub five {
     return 1;
+}
+sub foo {
+    return @_;
 }
 1;

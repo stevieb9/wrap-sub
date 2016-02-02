@@ -20,7 +20,6 @@ my $post = sub {
 };
 
 my $wrapper = Wrap::Sub->new(pre => $pre, post => $post);
-
 my $wrapped_subs = $wrapper->wrap('Three');
 
 Three::one();

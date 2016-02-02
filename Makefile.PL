@@ -32,6 +32,7 @@ WriteMakefile(
     },
     PREREQ_PM => {
         'Carp' => 0,
+        'Devel::Examine::Subs' => 1.62,
         'Scalar::Util' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
