@@ -8,7 +8,7 @@ use Scalar::Util qw(weaken);
 
 use Data::Dumper;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 BEGIN {
     *CORE::GLOBAL::caller = sub (;$) {
