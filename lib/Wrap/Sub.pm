@@ -158,6 +158,10 @@ Basic functionality example
 
     $foo_obj->post(sub { print "changed post\n"; } );
 
+    # name of sub
+
+    $foo_obj->name;
+
     # unwrap and rewrap
 
     $foo_obj->unwrap;
