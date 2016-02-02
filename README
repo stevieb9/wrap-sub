@@ -3,7 +3,9 @@ NAME
     Wrap::Sub - Object Oriented subroutine wrapper with pre and post hooks,
     and more.
 
-SYNOPSIS use Wrap::Sub;
+SYNOPSIS
+
+        use Wrap::Sub;
 
     Basic functionality example
 

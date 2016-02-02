@@ -8,7 +8,7 @@ use Devel::Examine::Subs;
 use Scalar::Util qw(weaken);
 use Wrap::Sub::Child;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 sub new {
     my $self = bless {}, shift;
@@ -139,6 +139,7 @@ Wrap::Sub - Object Oriented subroutine wrapper with pre and post hooks, and more
 <a href='https://coveralls.io/github/stevieb9/wrap-sub?branch=master'><img src='https://coveralls.io/repos/stevieb9/wrap-sub/badge.svg?branch=master&service=github' alt='Coverage Status' /></a>
 
 =head1 SYNOPSIS
+
     use Wrap::Sub;
 
 Basic functionality example
