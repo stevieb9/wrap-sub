@@ -52,7 +52,7 @@ sub wrap {
 
         my $des = Devel::Examine::Subs->new(file => $INC{$module_file});
         my $all = $des->all;
-        @subs = map { "$module::$_" } @$all;
+        @subs = map { "$module\::$_" } @$all;
     }
     else {
         push @subs, $sub;
