@@ -1,6 +1,7 @@
 Revision history for Wrap-Sub
 
 0.06    2016-02-03
+        - renamed wrapped_state() to is_wrapped() (fixes #6)
         - minor code cleanup
         - POD rewrite
 
