@@ -1,5 +1,9 @@
 Revision history for Wrap-Sub
 
+0.06    2016-02-03
+        - minor code cleanup
+        - POD rewrite
+
 0.05    2016-02-02
         - the parent wrap object now has a results() method, returns a list of
           all post() call results (even if post_return is disabled) (fixes #3)
