@@ -19,7 +19,7 @@ BEGIN {
     my $post_cref = sub {
         my $pre_return = shift;
         my $time = gettimeofday() - $pre_return->[0];
-        return "$Wrap::Sub::name finished in $time seconds\n";
+        return "$Wrap::Sub::name took $time seconds\n";
     };
 
     my $w = Wrap::Sub->new( pre => $pre_cref, post => $post_cref);
@@ -30,8 +30,10 @@ BEGIN {
 
     my @results = $w->results;
 
+    is (@results, 8, "results() provides results");
+
     for (@results){
-        like ($_->[0], qr/Three.*?finished/, "results() $_->[0] ok");
+        like ($_->[0], qr/Three.*?took/, "results() $_->[0] ok");
     }
 
 }

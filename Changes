@@ -1,9 +1,9 @@
 Revision history for Wrap-Sub
 
 0.06    2016-02-03
-        - renamed wrapped_state() to is_wrapped() (fixes #6)
+        - renamed wrapped_state() to is_wrapped() (closes #6)
         - minor code cleanup
-        - POD rewrite
+        - POD rewrite (closes #4)
 
 0.05    2016-02-02
         - the parent wrap object now has a results() method, returns a list of

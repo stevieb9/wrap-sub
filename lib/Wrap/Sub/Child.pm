@@ -79,8 +79,9 @@ sub _wrap {
                 $post_return = [ $wrap->{post}->($pre_return, $sub_return) ];
             }
 
-            push @{ $wrap->{wrapper}{post_returns} }, $post_return if defined $wrap->{post};
-
+            if (defined $wrap->{post}) {
+                push @{ $wrap->{wrapper}{post_returns} }, $post_return;
+            }
             $post_return = undef if ! $wrap->{post_return};
 
             if (! $wrap->{pre} && ! $wrap->{post}) {

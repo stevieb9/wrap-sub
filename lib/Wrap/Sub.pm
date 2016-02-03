@@ -68,14 +68,13 @@ sub wrap {
         push @subs, $sub;
     }
 
-
-
     my @children;
 
     for my $sub (@subs) {
         my $child = Wrap::Sub::Child->new;
 
-        $child->{wrapper} = $self; # allow parent capture of child sta
+        # allow parent capture of child sta
+        $child->{wrapper} = $self;
 
         $child->pre($self->{pre}) if $self->{pre};
 
