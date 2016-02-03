@@ -55,9 +55,11 @@ sub wrap {
 
         my $des = Devel::Examine::Subs->new(file => $INC{$module_file});
 
+        # FIXME: remove this after DES #7
         if (-e $backup_file) {
             unlink $backup_file or croak "can't unlink $backup_file!\n";
         }
+        # /FIXME
 
         my $all = $des->all;
         @subs = map { "$module\::$_" } @$all;
