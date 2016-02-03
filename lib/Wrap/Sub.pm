@@ -112,7 +112,7 @@ sub wrapped_subs {
     my @names;
 
     for (keys %{ $self->{objects} }) {
-        if ($self->wrapped_state($_)){
+        if ($self->is_wrapped($_)){
             push @names, $_;
         }
     }
@@ -127,22 +127,22 @@ sub wrapped_objects {
     }
     return @wrapped;
 }
-sub wrapped_state {
+sub is_wrapped {
     my ($self, $sub) = @_;
 
     if (! $sub){
-        croak "calling wrapped_state() on a Wrap::Sub object requires a sub " .
+        croak "calling is_wrapped() on a Wrap::Sub object requires a sub " .
               "name to be passed in as its only parameter. ";
     }
 
     eval {
-        my $test = $self->{objects}{$sub}{obj}->wrapped_state;
+        my $test = $self->{objects}{$sub}{obj}->is_wrapped;
     };
     if ($@){
-        croak "can't call wrapped_state() on the class if the sub hasn't yet " .
+        croak "can't call is_wrapped() on the class if the sub hasn't yet " .
               "been wrapped. ";
     }
-    return $self->{objects}{$sub}{obj}->wrapped_state;
+    return $self->{objects}{$sub}{obj}->is_wrapped;
 }
 sub __end {}; # vim fold placeholder
 
@@ -186,7 +186,7 @@ Basic functionality example
 
     # wrapped or not?
 
-    my $is_wrapped = $foo_obj->wrapped_state;
+    my $is_wrapped = $foo_obj->is_wrapped;
 
     # list all subs wrapped under the current wrap object
 
@@ -252,11 +252,11 @@ perform the same actions
     for my $sub_name (keys %$module_subs){
         my $sub_obj = $module_subs->{$sub_name};
 
-        print "$sub_name is wrapped\n" if $sub_obj->wrapped_state;
+        print "$sub_name is wrapped\n" if $sub_obj->is_wrapped;
 
         $sub_obj->unwrap;
 
-        if ($sub_obj->wrapped_state) {
+        if ($sub_obj->is_wrapped) {
             die "$sub_name not unwrapped!"
         }
     }
@@ -337,7 +337,7 @@ the parent wrap object.
 Returns a list of all sub objects underneath the parent wrap object, regardless
 if its sub is currently wrapped or not.
 
-=head2 C<wrapped_state('Sub::Name')>
+=head2 C<is_wrapped('Sub::Name')>
 
 Returns 1 if the sub currently under the parent wrap object is wrapped or not,
 and 0 if not. Croaks if there hasn't been a child sub object created with this
@@ -376,7 +376,7 @@ not.
 Returns an array of the parameters sent to the subroutine. C<croak()s> if
 we're called before the wrapped sub has been called.
 
-=head2 C<wrapped_state>
+=head2 C<is_wrapped>
 
 Returns true (1) if the sub the object refers to is currently wrapped, and
 false (0) if not.

@@ -15,7 +15,7 @@ BEGIN {
     my $foo = $wrap->wrap('wrap');
     my $ret1 = wrap();
 
-    is ($foo->wrapped_state, 1, "sub is wrapped");
+    is ($foo->is_wrapped, 1, "sub is wrapped");
     is ($ret1, 5, "before reset and no params, return is ok");
 
     $foo->post(post_return => 1, sub { return $_[1]->[0] + 5; });
@@ -33,7 +33,7 @@ BEGIN {
 
 
 
-    is ($foo->wrapped_state, 1, "after reset, sub is still wrapped");
+    is ($foo->is_wrapped, 1, "after reset, sub is still wrapped");
 }
 
 done_testing();

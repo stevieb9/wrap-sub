@@ -40,7 +40,7 @@ BEGIN {
 
     for my $key (keys %$subs){
         is (grep(/^$key$/, @known), 1, "$key is known");
-        is ($subs->{$key}->wrapped_state, 1, "$key is wrapped");
+        is ($subs->{$key}->is_wrapped, 1, "$key is wrapped");
     }
 };
 

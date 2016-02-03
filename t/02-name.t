@@ -27,7 +27,7 @@ BEGIN {
     my $foo = $wrap->wrap('foo');
 
     is ($foo->name, 'main::foo', "name() adds main:: properly");
-    is ($foo->wrapped_state, 1, "sub is confirmed wrapped");
+    is ($foo->is_wrapped, 1, "sub is confirmed wrapped");
 
     my $ret1 = foo();
     my $ret2 = main::foo();

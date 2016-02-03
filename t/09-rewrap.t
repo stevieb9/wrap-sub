@@ -22,15 +22,15 @@ BEGIN {
     my $wrap = Wrap::Sub->new;
     my $foo = $wrap->wrap('One::foo');
 
-    is ($foo->wrapped_state, 1, "sub is wrapped");
+    is ($foo->is_wrapped, 1, "sub is wrapped");
 
     $foo->unwrap;
 
-    is ($foo->wrapped_state, 0, "sub is unwrapped");
+    is ($foo->is_wrapped, 0, "sub is unwrapped");
 
     $foo->rewrap;
 
-    is ($foo->wrapped_state, 1, "sub is re-wrapped with rewrap()");
+    is ($foo->is_wrapped, 1, "sub is re-wrapped with rewrap()");
 }
 
 done_testing();

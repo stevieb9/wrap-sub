@@ -25,14 +25,14 @@ BEGIN {
 
     $foo->unwrap;
 
-    is ($foo->wrapped_state, 0, "unwrapped sub");
+    is ($foo->is_wrapped, 0, "unwrapped sub");
 
     is ($wrap->wrapped_objects, 3, "after an unwrap, return is still correct");
 
     $foo->rewrap;
 
     for my $obj (@objects){
-        is ($obj->wrapped_state, 1, "objects can call state");
+        is ($obj->is_wrapped, 1, "objects can call state");
         like ($obj->name, qr/(?:One::foo|One::bar|One::baz)/, "name is correct on all objects");
     }
 }

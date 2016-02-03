@@ -30,7 +30,7 @@ use Wrap::Sub;
 
     # state
 
-    print $foo_obj->name . " is wrapped\n" if $foo_obj->wrapped_state;
+    print $foo_obj->name . " is wrapped\n" if $foo_obj->is_wrapped;
 
     # list the names of all subs
 
@@ -89,10 +89,10 @@ use Wrap::Sub;
         for my $sub_name (keys %$module_subs){
             my $sub_obj = $module_subs->{$sub_name};
 
-            print "$sub_name is wrapped\n" if $sub_obj->wrapped_state;
+            print "$sub_name is wrapped\n" if $sub_obj->is_wrapped;
 
             $sub_obj->unwrap;
-            if ($sub_obj->wrapped_state) {
+            if ($sub_obj->is_wrapped) {
                 die "$sub_name not unwrapped!"
             }
         }

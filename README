@@ -34,7 +34,7 @@ SYNOPSIS
     
         # wrapped or not?
     
-        my $is_wrapped = $foo_obj->wrapped_state;
+        my $is_wrapped = $foo_obj->is_wrapped;
     
         # list all subs wrapped under the current wrap object
     
@@ -100,11 +100,11 @@ SYNOPSIS
         for my $sub_name (keys %$module_subs){
             my $sub_obj = $module_subs->{$sub_name};
     
-            print "$sub_name is wrapped\n" if $sub_obj->wrapped_state;
+            print "$sub_name is wrapped\n" if $sub_obj->is_wrapped;
     
             $sub_obj->unwrap;
     
-            if ($sub_obj->wrapped_state) {
+            if ($sub_obj->is_wrapped) {
                 die "$sub_name not unwrapped!"
             }
         }
@@ -185,7 +185,7 @@ WRAP OBJECT METHODS
     Returns a list of all sub objects underneath the parent wrap object,
     regardless if its sub is currently wrapped or not.
 
- wrapped_state('Sub::Name')
+ is_wrapped('Sub::Name')
 
     Returns 1 if the sub currently under the parent wrap object is wrapped
     or not, and 0 if not. Croaks if there hasn't been a child sub object
@@ -224,7 +224,7 @@ WRAPPED SUB OBJECT METHODS
     Returns an array of the parameters sent to the subroutine. croak()s if
     we're called before the wrapped sub has been called.
 
- wrapped_state
+ is_wrapped
 
     Returns true (1) if the sub the object refers to is currently wrapped,
     and false (0) if not.

@@ -42,12 +42,12 @@ BEGIN {
     $ret = One::foo();
 
     is ($ret, 'foo', "child object is unwrapped");
-    is ($foo->wrapped_state, 0, "confirm child obj is unwrapped");
+    is ($foo->is_wrapped, 0, "confirm child obj is unwrapped");
 
     $foo->rewrap;
     $ret = One::foo();
 
-    is ($foo->wrapped_state, 1, "rewrap() rewraps");
+    is ($foo->is_wrapped, 1, "rewrap() rewraps");
     is ($ret, 'foo', "child obj calling rewrap in void w/ params is wrapped");
 }
 

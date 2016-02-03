@@ -109,7 +109,7 @@ sub _wrap {
 sub rewrap {
     my $self = shift;
 
-    if ($self->wrapped_state){
+    if ($self->is_wrapped){
         croak "\ncan't call rewrap() on an already wrapped sub. Either call " .
               "unwrap() first, or DESTROY() the object\n";
     }
@@ -192,7 +192,7 @@ sub _check_wrap {
         croak "\n\nwrap()'s '$_[2]' parameter must be code a reference.";
     }
 }
-sub wrapped_state {
+sub is_wrapped {
     return shift->{state};
 }
 sub DESTROY {
@@ -232,7 +232,7 @@ calling this.
 
 Re-wraps an unwrapped sub back to the same subroutine it was originally wrapped with.
 
-=head2 wrapped_state
+=head2 is_wrapped
 
 Returns bool whether the sub the object represents is currently wrapped or not.
 

@@ -17,7 +17,7 @@ BEGIN {
     my $wrap = Wrap::Sub->new;
     $w = $wrap->wrap('wrap_1');
 
-    is ($w->wrapped_state, 1, "sub is wrapped");
+    is ($w->is_wrapped, 1, "sub is wrapped");
 
     is (wrap_1(), 'wrap_1', "wrapped sub does the right thing");
 

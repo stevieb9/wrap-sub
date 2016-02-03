@@ -18,7 +18,7 @@ BEGIN {
     is (ref $test, 'Wrap::Sub::Child', '$wrap->wrap() returns a child object');
 
     Two::test;
-    is ($test->wrapped_state, 1, "wrap() wraps");
+    is ($test->is_wrapped, 1, "wrap() wraps");
 }
 {
     my $wrap = Wrap::Sub->new;
