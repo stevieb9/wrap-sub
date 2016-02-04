@@ -69,19 +69,18 @@ sub _wrap {
 
             my ($pre_return, $post_return) = ([], []);
 
-            if ($wrap->{pre}){
+            if (defined $wrap->{pre}){
                 $pre_return = [ $wrap->{pre}->(@_) ];
+                push @{ $wrap->{wrapper}{pre_returns} }, $pre_return;
             }
 
             my $sub_return = [ $wrap->{orig}->(@_) ] || [];
 
             if (defined $wrap->{post}){
                 $post_return = [ $wrap->{post}->($pre_return, $sub_return) ];
-            }
-
-            if (defined $wrap->{post}) {
                 push @{ $wrap->{wrapper}{post_returns} }, $post_return;
             }
+
             $post_return = undef if ! $wrap->{post_return};
 
             if (! $wrap->{pre} && ! $wrap->{post}) {

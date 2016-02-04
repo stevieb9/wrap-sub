@@ -28,14 +28,21 @@ BEGIN {
 
     Three::one();
 
-    my @results = $w->results;
+    my @post_results = $w->post_results;
 
-    is (@results, 8, "results() provides results");
+    is (@post_results, 8, "results() provides results");
 
-    for (@results){
-        like ($_->[0], qr/Three.*?took/, "results() $_->[0] ok");
+    for (@post_results){
+        like ($_->[0], qr/Three.*?took/, "pre results() $_->[0] ok");
     }
 
+    my @pre_results = $w->pre_results;
+
+    is (@pre_results, 8, "pre results() provides results");
+
+    for (@pre_results){
+        like ($_->[0], qr/^[0-9]+$/, "pre results() $_->[0] ok");
+    }
 }
 done_testing();
 

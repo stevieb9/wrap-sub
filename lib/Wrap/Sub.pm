@@ -55,12 +55,6 @@ sub wrap {
 
         my $des = Devel::Examine::Subs->new(file => $INC{$module_file});
 
-        # FIXME: remove this after DES #7
-        if (-e $backup_file) {
-            unlink $backup_file or croak "can't unlink $backup_file!\n";
-        }
-        # /FIXME
-
         my $all = $des->all;
         @subs = map { "$module\::$_" } @$all;
     }
@@ -102,7 +96,10 @@ sub wrap {
         return \%child_hash;
     }
 }
-sub results {
+sub pre_results {
+    return @{ $_[0]->{pre_returns} };
+}
+sub post_results {
     return @{ $_[0]->{post_returns} };
 }
 sub wrapped_subs {
@@ -230,9 +227,10 @@ the modified results
     $foo_obj->post($post_cref, post_return => 1);
 
 Get an ordered list (array of array references) of the last expression
-evaluated in all sub object C<post()> calls, even if C<post_return> is false
+evaluated in all sub object C<pre()> and C<post()> functions
 
-    my @post_results = $wrapper->results;
+    my @pre_results = $wrapper->pre_results;
+    my @post_results = $wrapper->post_results;
 
     for my $sub_post_result (@post_results){
         print "$sub_post_result->[0]\n";
@@ -348,7 +346,15 @@ Returns 1 if the sub currently under the parent wrap object is wrapped or not,
 and 0 if not. Croaks if there hasn't been a child sub object created with this
 sub name.
 
-=head2 C<results>
+=head2 C<post_results>
+
+As each wrapped sub is called where a C<pre()> method is set, we'll stash the
+last expression evaluated in it, and push the results to an array. This method
+will fetch that array.
+
+Each entry is an array reference per C<post()> call.
+
+=head2 C<post_results>
 
 As each wrapped sub is called where a C<post()> method is set, we'll stash the
 last expression evaluated in it, and push the results to an array. This method
