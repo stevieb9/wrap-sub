@@ -346,13 +346,13 @@ Returns 1 if the sub currently under the parent wrap object is wrapped or not,
 and 0 if not. Croaks if there hasn't been a child sub object created with this
 sub name.
 
-=head2 C<post_results>
+=head2 C<pre_results>
 
 As each wrapped sub is called where a C<pre()> method is set, we'll stash the
 last expression evaluated in it, and push the results to an array. This method
 will fetch that array.
 
-Each entry is an array reference per C<post()> call.
+Each entry is an array reference per C<pre()> call, containing the returned data.
 
 =head2 C<post_results>
 
@@ -360,7 +360,7 @@ As each wrapped sub is called where a C<post()> method is set, we'll stash the
 last expression evaluated in it, and push the results to an array. This method
 will fetch that array.
 
-Each entry is an array reference per C<post()> call.
+Each entry is an array reference per C<post()> call, containing the returned data.
 
 =head1 WRAPPED SUB OBJECT METHODS
 

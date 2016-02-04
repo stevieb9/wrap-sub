@@ -197,13 +197,14 @@ WRAP OBJECT METHODS
     or not, and 0 if not. Croaks if there hasn't been a child sub object
     created with this sub name.
 
- post_results
+ pre_results
 
     As each wrapped sub is called where a pre() method is set, we'll stash
     the last expression evaluated in it, and push the results to an array.
     This method will fetch that array.
 
-    Each entry is an array reference per post() call.
+    Each entry is an array reference per pre() call, containing the
+    returned data.
 
  post_results
 
@@ -211,7 +212,8 @@ WRAP OBJECT METHODS
     the last expression evaluated in it, and push the results to an array.
     This method will fetch that array.
 
-    Each entry is an array reference per post() call.
+    Each entry is an array reference per post() call, containing the
+    returned data.
 
 WRAPPED SUB OBJECT METHODS
 
